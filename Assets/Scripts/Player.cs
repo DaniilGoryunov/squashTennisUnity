@@ -67,6 +67,9 @@ public class Player : MonoBehaviour
                 // Резко задаём скорость мяча
                 rb.linearVelocity = forward * currentShot.hitForce + Vector3.up * currentShot.upForce;
 
+                Ball ballScript = ball.GetComponent<Ball>();
+                if (ballScript != null) ballScript.MarkLastHitTime();
+
                 // Анимация
                 if (animator != null)
                 {

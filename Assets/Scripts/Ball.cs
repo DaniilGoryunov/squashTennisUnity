@@ -6,64 +6,61 @@ public class Ball : MonoBehaviour
     public Transform spawnPoint;
     public GameManager gameManager;
 
-    private Vector3 initialPos;
+    private Rigidbody rb;
     private bool hasHitTarget = false;
-    private float lastHitTime = 0f; // Для отслеживания активности мяча
+    private float lastHitTime = 0f; // Чтобы мяч не сбрасывался сразу после удара
 
-    private void Start()
+    void Start()
     {
-        initialPos = transform.position;
+        rb = GetComponent<Rigidbody>();
         if (spawnPoint == null) spawnPoint = transform;
+        lastHitTime = Time.time;
     }
 
-    // Вызывается из Player.cs при ударе, чтобы зафиксировать время
+    // Вызывается из Player.cs при успешном ударе
     public void MarkLastHitTime() => lastHitTime = Time.time;
 
-    private void OnCollisionEnter(Collision collision)
+    void Update()
     {
-        if (collision.gameObject.TryGetComponent<TargetCircle>(out var target))
-        {
-            hasHitTarget = true;
-        }
+        if (rb == null) return;
 
-        // Отскок от стены
+        // 1. Мяч улетел за спину игрока (Z > 3)
+        if (transform.position.z > 3f) OnMiss();
+        // 2. Мяч провалился под пол
+        else if (transform.position.y < -0.5f) OnMiss();
+        // 3. Мяч остановился на полу > 3 секунд
+        else if (Time.time > lastHitTime + 3f && rb.linearVelocity.magnitude < 0.2f) OnMiss();
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        // Попал в мишень
+        if (collision.gameObject.TryGetComponent<TargetCircle>(out _))
+            hasHitTarget = true;
+
+        // Попал в стену
         if (collision.transform.CompareTag("Wall"))
         {
             if (!hasHitTarget && gameManager != null)
                 gameManager.AddPoints(1);
-            
-            // Не сбрасываем сразу! Ждём, пока мяч долетит обратно к игроку или упадёт
-            return;
-        }
-
-        // Упал под пол
-        if (transform.position.y < -0.5f)
-        {
-            ResetBall();
+            // Мяч отскакивает, ждём, пока он вернётся к игроку
         }
     }
 
-    void Update()
+    void OnMiss()
     {
-        // Если мяч улетел за спину игрока
-        if (transform.position.z > 4f)
-            ResetBall();
+        if (gameManager != null)
+            gameManager.ResetScore(); // ← Обнуляем счёт при промахе
 
-        // Если мяч стоит на месте больше 3 секунд после удара
-        if (Time.time > lastHitTime + 3f && GetComponent<Rigidbody>().linearVelocity.magnitude < 0.1f)
-            ResetBall();
+        ResetBall();
     }
 
     void ResetBall()
     {
-        Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-        
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
         transform.position = spawnPoint.position;
         hasHitTarget = false;
+        lastHitTime = Time.time; // Сбрасываем таймер, чтобы Update не сработал дважды
     }
 }

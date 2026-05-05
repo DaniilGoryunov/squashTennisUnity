@@ -3,13 +3,19 @@ using UnityEngine;
 public class TargetCircle : MonoBehaviour
 {
     [Header("Settings")]
-    public int bonusScore = 5;        // Сколько очков даёт попадание
+    public int bonusScore = 5;          // Очки за попадание
     public Color hitColor = Color.green; // Цвет при попадании
-    public float resetDelay = 1.5f;   // Время до восстановления
+    public float flashDuration = 0.2f;   // Время вспышки перед перемещением
+
+    [Header("Random Spawn Bounds (относительно центра стены)")]
+    public float minX = -8f;
+    public float maxX = 8f;
+    public float minY = 1f;
+    public float maxY = 4.5f;
 
     private Renderer rend;
-    private bool isHit = false;
     private Color originalColor;
+    private bool isBusy = false; // Защита от двойных срабатываний
 
     void Start()
     {
@@ -20,28 +26,37 @@ public class TargetCircle : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // Проверяем: это мяч + мишень ещё не активирована
-        if (other.CompareTag("Ball") && !isHit)
+        // Проверяем: это мяч + мишень свободна + не в состоянии перемещения
+        if (other.CompareTag("Ball") && !isBusy)
         {
-            isHit = true;
-            
-            // Меняем цвет
-            if (rend != null)
-                rend.material.color = hitColor;
+            isBusy = true;
 
-            // Начисляем бонусные очки через менеджер
+            // Начисляем очки
             if (GameManager.Instance != null)
                 GameManager.Instance.AddPoints(bonusScore);
 
-            // Восстанавливаем мишень через время
-            Invoke(nameof(ResetTarget), resetDelay);
+            // Визуальная вспышка
+            if (rend != null)
+                rend.material.color = hitColor;
+
+            // Перемещаем на новую позицию через короткую паузу
+            Invoke(nameof(Reposition), flashDuration);
         }
     }
 
-    void ResetTarget()
+    void Reposition()
     {
-        isHit = false;
+        // Генерируем случайную позицию в заданных границах
+        float newX = Random.Range(minX, maxX);
+        float newY = Random.Range(minY, maxY);
+        
+        // Z оставляем прежним (чуть впереди стены)
+        transform.position = new Vector3(newX, newY, transform.position.z);
+
+        // Возвращаем цвет и разблокируем мишень
         if (rend != null)
             rend.material.color = originalColor;
+
+        isBusy = false;
     }
 }

@@ -3,39 +3,37 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance; // Глобальная ссылка для доступа из других скриптов
+    public static GameManager Instance;
 
     [Header("UI")]
-    public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI scoreText; // Перетащи сюда ScoreText
 
-    private int playerScore = 0;
+    private int currentScore = 0;
 
     void Awake()
     {
-        // Синглтон-паттерн: гарантируем, что экземпляр один
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // Не удалять при смене сцены (опционально)
-        }
-        else
-        {
-            Destroy(gameObject); // Если уже есть менеджер — удаляем дубль
-        }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+        
+        UpdateUI(); // Показать "Счёт: 0" сразу
     }
 
-    // Публичный метод для добавления очков (вызывается из TargetCircle и Ball)
     public void AddPoints(int points)
     {
-        playerScore += points;
+        currentScore += points;
+        UpdateUI();
+    }
+
+    // Вызывается при промахе мяча
+    public void ResetScore()
+    {
+        currentScore = 0;
         UpdateUI();
     }
 
     void UpdateUI()
     {
         if (scoreText != null)
-        {
-            scoreText.text = "Счёт: " + playerScore;
-        }
+            scoreText.text = "Счёт: " + currentScore;
     }
 }

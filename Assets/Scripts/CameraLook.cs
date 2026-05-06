@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class CameraLook : MonoBehaviour
 {
-    public float mouseSensitivity = 0.5f; // В новой системе значения другие (0.1–0.3 обычно)
+    public float mouseSensitivity = 0.5f;
     public Transform playerBody;
     private float xRotation = 0f;
 
@@ -17,7 +17,6 @@ public class CameraLook : MonoBehaviour
     {
         if (Mouse.current == null) return;
 
-        // delta.ReadValue() возвращает смещение мыши с прошлого кадра в пикселях
         Vector2 mouseDelta = Mouse.current.delta.ReadValue();
         float mouseX = mouseDelta.x * mouseSensitivity;
         float mouseY = mouseDelta.y * mouseSensitivity;

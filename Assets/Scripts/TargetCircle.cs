@@ -3,9 +3,9 @@ using UnityEngine;
 public class TargetCircle : MonoBehaviour
 {
     [Header("Settings")]
-    public int bonusScore = 5;          // Очки за попадание
-    public Color hitColor = Color.green; // Цвет при попадании
-    public float flashDuration = 0.2f;   // Время вспышки перед перемещением
+    public int bonusScore = 5;
+    public Color hitColor = Color.green;
+    public float flashDuration = 0.2f;
 
     [Header("Random Spawn Bounds (относительно центра стены)")]
     public float minX = -8f;
@@ -15,7 +15,7 @@ public class TargetCircle : MonoBehaviour
 
     private Renderer rend;
     private Color originalColor;
-    private bool isBusy = false; // Защита от двойных срабатываний
+    private bool isBusy = false; 
 
     void Start()
     {
@@ -26,34 +26,27 @@ public class TargetCircle : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // Проверяем: это мяч + мишень свободна + не в состоянии перемещения
         if (other.CompareTag("Ball") && !isBusy)
         {
             isBusy = true;
 
-            // Начисляем очки
             if (GameManager.Instance != null)
                 GameManager.Instance.AddPoints(bonusScore);
 
-            // Визуальная вспышка
             if (rend != null)
                 rend.material.color = hitColor;
 
-            // Перемещаем на новую позицию через короткую паузу
             Invoke(nameof(Reposition), flashDuration);
         }
     }
 
     void Reposition()
     {
-        // Генерируем случайную позицию в заданных границах
         float newX = Random.Range(minX, maxX);
         float newY = Random.Range(minY, maxY);
         
-        // Z оставляем прежним (чуть впереди стены)
         transform.position = new Vector3(newX, newY, transform.position.z);
 
-        // Возвращаем цвет и разблокируем мишень
         if (rend != null)
             rend.material.color = originalColor;
 

@@ -9,8 +9,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
 
     [Header("Wall Milestone")]
-    public Renderer wallRenderer;      // Перетащи объект Wall
-    public Material wallMaterial10;    // Перетащи новый материал
+    public Renderer wallRenderer; 
+    public Material wallMaterial10; 
     public Material wallMaterialOriginal;
 
     private int currentScore = 0;
@@ -26,7 +26,6 @@ public class GameManager : MonoBehaviour
     public void AddPoints(int points)
     {
         currentScore += points;
-        Debug.Log($"[GameManager] Счёт: {currentScore} (добавлено +{points})");
         UpdateUI();
         CheckMilestones();
     }
@@ -46,7 +45,6 @@ public class GameManager : MonoBehaviour
                 return;
             }
 
-            Debug.Log("[GameManager] 🎯 ДОСТИГНУТО 10 ОЧКОВ! Меняю материал стены.");
             wallRenderer.material = wallMaterial10;
             wallMaterialChanged = true;
         }
@@ -54,7 +52,6 @@ public class GameManager : MonoBehaviour
 
     public void ResetScore()
     {
-        Debug.Log($"[GameManager] Сброс счёта. Было: {currentScore} -> Стало: 0");
         currentScore = 0;
         UpdateUI();
 
